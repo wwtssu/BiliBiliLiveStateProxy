@@ -62,16 +62,15 @@ void refreshInfo() async{
   if(shouldRefreshList.isNotEmpty){
     print('------------------refresh start------------------');
     var count = shouldRefreshList.length;
-    var lastCount;
     print('count = $count');
+    var oneQureyCount = 200;
     while(count > 0){
-      lastCount = count;
-      var url = "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=${(shouldRefreshList.skip(shouldRefreshList.length - count)).map((e) => e.uid).toList().join('&uids[]=')}";
+      var url = "https://api.live.bilibili.com/room/v1/Room/get_status_info_by_uids?uids[]=${(shouldRefreshList.skip(shouldRefreshList.length - count)).take(oneQureyCount).map((e) => e.uid).toList().join('&uids[]=')}";
       print('request url: $url');
       var response = await Dio().get(url);
       var json = response.data;
       if(json['code'] == 0){
-        count = count - json['data'].length;
+        count = count - oneQureyCount;
         if(json['data'] is Map) {
             json['data'].forEach((k,v){
               var info = getInfo(int.parse(k));
@@ -81,7 +80,6 @@ void refreshInfo() async{
           );
         }
       }
-      if(lastCount == count) break;
     }
     infoList.forEach((element) {
       if(element.data == null) element.isError = true;
